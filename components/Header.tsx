@@ -32,7 +32,8 @@ function Header() {
                     className="cursor-pointer object-contain"
                 />
                 <ul className="hidden space-x-4 md:flex">
-                    <li className="headerLink">Home</li>
+                    <li className="headerLink cursor-default font-semibold
+                    text-white hover:text-white">Home</li>
                     <li className="headerLink">Tv Shows</li>
                     <li className="headerLink">Movies</li>
                     <li className="headerLink">New & Popular</li>
@@ -40,7 +41,7 @@ function Header() {
                 </ul>
             </div>
             <div className='flex items-center space-x-4 text-sm font-light'>
-                <SearchIcon className='hidden sm:inline h-6 w-6' />
+                <SearchIcon className='sm hidden sm:inline h-6 w-6' />
                 <p className="hidden lg:inline">
                     Kids
                 </p>
