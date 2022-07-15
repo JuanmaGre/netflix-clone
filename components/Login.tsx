@@ -13,14 +13,13 @@ interface Inputs {
 
 function Login() {
     const [login, setLogin] = useState(false);
-    const {signIn, signUp} = useAuth();
+    const { signIn, signUp } = useAuth();
     const { 
         register, 
         handleSubmit, 
         watch, 
         formState: { errors }
     } = useForm<Inputs>();
-    
     const onSubmit: SubmitHandler<Inputs> = async (data) => {
         if(login) {
             await signIn(data.email, data.password)
@@ -57,34 +56,30 @@ function Login() {
                 <h1 className="text-4xl font-semibold">
                     Sign In
                 </h1>
-                <div className="space-y-4">
+                <div>
                     <label className="inline-block w-full">
                         <input 
-                            className={`input ${
-                                errors.email && 'border-b-2 border-orange-500'
-                            }`}
+                            className="input"
                             type="email"
                             placeholder="Email"
                             {...register('email', { required: true })}
                         />
                         {errors.email && (
-                            <p className="p-1 text-[13px] font-light  text-orange-500">
+                            <p className="text-sm  text-orange-500">
                                 Please enter a valid email.
                             </p>
                         )}
                     </label>
                     <label className="inline-block w-full">
                         <input 
-                            className={`input ${
-                                errors.password && 'border-b-2 border-orange-500'
-                            }`}
+                            className="input"
                             type="password"
                             placeholder="Password"
                             {...register('password', { required: true })}
                         />
                         {errors.password && (
-                            <p className="p-1 text-[13px] font-light  text-orange-500">
-                                Your password must contain between 4 and 60 characters.
+                            <p className="text-sm  text-orange-500">
+                                Please enter a valid password.
                             </p>
                         )}
                     </label>
@@ -96,7 +91,7 @@ function Login() {
                     Sign In
                 </button>
                 <div className="text-[gray]">
-                    New to Netflix ?{' '}
+                    New to Netflix ?(' ')
                     <button
                         onClick={() => setLogin(false)} 
                         type="submit" 
