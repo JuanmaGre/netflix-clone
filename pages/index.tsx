@@ -11,6 +11,7 @@ import { modalState } from '../atoms/modalAtom'
 import Plans from '../components/Plans'
 import { getProducts, Product } from '@stripe/firestore-stripe-payments'
 import payments from '../lib/stripe'
+import useSubscription from '../hooks/useSuscription'
 
 
 interface Props {
@@ -36,10 +37,9 @@ const Home = ({
     trendingNow,
     products
     }: Props) => {
-        
-    const { logout, loading } = useAuth();
+    const { loading, user } = useAuth();
     const showModal = useRecoilValue(modalState);
-    const subscription = false;
+    const subscription = useSubscription(user);
 
     if(loading || subscription === null) return null
     if (!subscription) return <Plans products={products} />
