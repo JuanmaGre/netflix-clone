@@ -1,10 +1,14 @@
-import { PlusIcon, ThumbUpIcon, VolumeOffIcon, VolumeUpIcon, XIcon } from '@heroicons/react/outline';
+import { CheckIcon, PlusIcon, ThumbUpIcon, VolumeOffIcon, VolumeUpIcon, XIcon } from '@heroicons/react/outline';
 import MuiModal from '@mui/material/Modal'
+import { collection, deleteDoc, doc, DocumentData, onSnapshot, setDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
+import toast, { Toaster } from 'react-hot-toast';
 import { FaPlay } from 'react-icons/fa';
 import ReactPlayer from 'react-player';
 import { useRecoilState } from 'recoil';
 import { modalState, movieState } from '../atoms/modalAtom';
+import { db } from '../firebase';
+import useAuth from '../hooks/useAuth';
 import { Element, Movie, Genre } from '../typings';
 
 
@@ -14,8 +18,11 @@ function Modal() {
     const [movie, setMovie] = useRecoilState(movieState);
     const [data, setData] = useState();
     const [trailer, setTrailer] = useState("");
+    const { user } = useAuth();
     const [genres, setGenres] = useState<Genre[]>();
     const [muted, setMuted] = useState(true);
+    const [addedToList, setAddedToList] = useState(false);
+    const [movies, setMovies] = useState<DocumentData[] | Movie[]>([]);
 
     useEffect (() => {
         if(!movie) return;
@@ -40,9 +47,87 @@ function Modal() {
         fetchMovie()
     }, [movie]);
 
+    useEffect(() => {
+        if (!movie) return
+        
+        async function fetchMovie() {
+            const data = await fetch(
+                `https://api.themoviedb.org/3/${
+                    movie?.media_type === 'tv' ? 'tv' : 'movie'
+                }/${movie?.id}?api_key=${
+                    process.env.NEXT_PUBLIC_API_KEY
+                }&language=en-US&append_to_response=videos`
+            ).then((response) => response.json())
+            if (data?.videos) {
+                const index = data.videos.results.findIndex(
+                    (element: Element) =>
+                        element.type === 'Trailer'
+                    )
+                setTrailer(data.videos?.results[index]?.key)
+            }
+            if (data?.genres) {
+                setGenres(data.genres)
+            }
+        }
+            fetchMovie()
+    }, [movie]);
+
     const handleClose = () => {
         setShowModal(false);
     };
+    
+    const handleList = async () => {
+        if(addedToList) {
+            await deleteDoc(
+                doc(db, "customers", user!.uid, "myList", movie?.id.toString()!)
+            )
+        
+            toast(`${movie?.title || movie?.original_name} has been remove from My List`,
+                {
+                    duration: 8000,
+                }
+            )
+        } else {
+            await setDoc(
+                doc(db, "customers", user!.uid, "myList", movie?.id.toString()!
+                ), {
+                    ...movie,
+                } 
+            )
+            
+            toast(`${movie?.title || movie?.original_name} has been added to My List`,
+                {
+                    duration: 8000,
+                    style: toastStyle,
+                }
+            );
+        };
+    };
+
+    useEffect(() => {
+        if (user) {
+            return onSnapshot(
+                collection(db, 'customers', user.uid, 'myList'),
+                (snapshot) => setMovies(snapshot.docs)
+            )
+            }
+        }, [db, movie?.id])
+        
+    useEffect(
+        () => setAddedToList(
+            movies.findIndex((result) => result.data().id === movie?.id) !== -1
+        ),[movies]
+    );
+
+    const toastStyle = {
+        background: 'white',
+        color: 'red',
+        fontWeight: 'bold',
+        fontSize: '16px',
+        padding: '15px',
+        borderRadius: '9999px',
+        maxWidth: '1000px',
+    }
 
     return (
         <MuiModal 
@@ -52,6 +137,7 @@ function Modal() {
             overflow-y-scroll rounded-md scrollbar-hide"
         >
             <>
+                <Toaster position='bottom-center' />
                 <button 
                     onClick={handleClose} 
                     className="modalButton absolute right-5 top-5 !z-40 h-9 w-9 border-none bg-[#181818]"
@@ -75,8 +161,15 @@ function Modal() {
                                 <FaPlay className='h-7 w-7 text-black' />
                                 Play
                             </button>
-                            <button className='modalButton'>
-                                <PlusIcon className='h-7 w-7' />
+                            <button 
+                                className='modalButton'
+                                onClick={handleList}    
+                            >
+                                {addedToList ? (
+                                        <CheckIcon className='h-7 w-7' />
+                                    ) : (
+                                        <PlusIcon className='h-7 w-7' />
+                                    )}
                             </button>
                             <button className='modalButton'>
                                 <ThumbUpIcon className='h-7 w-7' />
