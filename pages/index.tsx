@@ -53,7 +53,9 @@ const Home = ({
             showModal && '!h-screen overflow-hidden'
         }`}>
             <Head>
-                <title>Home - Netflix</title>
+                <title>
+                    {movie?.title || movie?.original_name || 'Home'} - Netflix
+                </title>
                 <link rel="icon" href="/favicon.ico" />
             </Head>
 
@@ -66,7 +68,7 @@ const Home = ({
                     <Row title="Top Rated" movies={topRated} />
                     <Row title="Action Thrillers" movies={actionMovies} />
 
-                    {list.length > 0 && <Row title="My List" movies={list} />}
+                    {/* {list.length > 0 && <Row title="My List" movies={list} />} */}
 
                     <Row title="Comedies" movies={comedyMovies} />
                     <Row title="Scary Movies" movies={horrorMovies} />
